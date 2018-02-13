@@ -646,7 +646,7 @@ def generate_plots(ulog, px4_ulog, db_data, vehicle_data):
                 param_change_labels.append(plots[i].param_change_label)
 
             plot_title = plots[i].title
-            plots[i] = plots[i].bokeh_plot
+            plots[i] = plots[i].widget
 
             fragment = 'Nav-'+plot_title.replace(' ', '-') \
                 .replace('&', '_').replace('(', '').replace(')', '')

@@ -10,8 +10,9 @@ from bokeh.models import (
     LabelSet, Label, ColorBar, LinearColorMapper, BasicTicker, PrintfTickFormatter
     )
 from bokeh.palettes import viridis
-from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
+from bokeh.models.widgets import DataTable, DateFormatter, TableColumn, CheckboxButtonGroup
 from bokeh import events
+from bokeh import layouts
 
 import numpy as np
 from scipy import signal
@@ -424,6 +425,11 @@ class DataPlot:
     def bokeh_plot(self):
         """ return the bokeh plot """
         return self._p
+    
+    @property
+    def widget(self):
+        """ return the widget containing the plot and other controls """
+        return self._w
 
     @property
     def param_change_label(self):
@@ -591,8 +597,8 @@ class DataPlot:
         on error """
         if self._had_error and not self._previous_success:
             return None
-        self._setup_plot()
-        return self._p
+        self._setup_widget()
+        return self._w
 
     @property
     def plot_height(self):
@@ -653,7 +659,12 @@ class DataPlot:
 
         # make it possible to hide graphs by clicking on the label
         p.legend.click_policy = "hide"
-
+    def _setup_widget(self):
+        self._setup_plot()
+        self.hidePlotButton = CheckboxButtonGroup(labels=[u"\U0001F441"])
+        self.linkAxisButton = CheckboxButtonGroup(labels=[u"\U0001F517"+u"X"],width = 20)
+        self.buttonWidgetBox = layouts.row(layouts.column(),self.hidePlotButton,self.linkAxisButton,layouts.column(),layouts.column())
+        self._w = layouts.column(self._p,self.buttonWidgetBox)
 
 class DataPlot2D(DataPlot):
     """
