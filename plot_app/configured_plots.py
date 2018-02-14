@@ -655,8 +655,19 @@ def generate_plots(ulog, px4_ulog, db_data, vehicle_data):
                 'fragment': fragment,
                 'title': plot_title
                 })
+    
+    #Link Axes
+    link_axes_html = '''
+    <button class="btn btn-common" data-toggle="button" onclick="alert('WOW');
+        console.log('Hey');" 
+        style="min-width:0">
+    Link X Axes
+    </button>
+    '''
 
-
+    link_axes_div = Div(text=link_axes_html, width=int(plot_width*0.9))
+    plots.append(widgetbox(link_axes_div, width=int(plot_width*0.9)))
+    
     # changed parameters
     plots.append(get_changed_parameters(ulog.initial_parameters, plot_width))
 
