@@ -638,20 +638,20 @@ def generate_plots(ulog, px4_ulog, db_data, vehicle_data):
 
 
     jinja_plot_data = []
+    widgets=[i for i in plots]
     for i in range(len(plots)):
         if plots[i] is None:
-            plots[i] = widgetbox(param_changes_button, width=int(plot_width * 0.99))
+            widgets[i] = widgetbox(param_changes_button, width=int(plot_width * 0.99))
         if isinstance(plots[i], DataPlot):
             if plots[i].param_change_label is not None:
                 param_change_labels.append(plots[i].param_change_label)
 
             plot_title = plots[i].title
-            plots[i] = plots[i].bokeh_plot
-
+            widgets[i]=plots[i].bokeh_plot
             fragment = 'Nav-'+plot_title.replace(' ', '-') \
                 .replace('&', '_').replace('(', '').replace(')', '')
             jinja_plot_data.append({
-                'model_id': plots[i].ref['id'],
+                'model_id': widgets[i].ref['id'],
                 'fragment': fragment,
                 'title': plot_title
                 })
@@ -669,7 +669,7 @@ def generate_plots(ulog, px4_ulog, db_data, vehicle_data):
     plots.append(widgetbox(link_axes_div, width=int(plot_width*0.9)))
     
     # changed parameters
-    plots.append(get_changed_parameters(ulog.initial_parameters, plot_width))
+    widgets.append(get_changed_parameters(ulog.initial_parameters, plot_width))
 
 
 
@@ -688,11 +688,11 @@ def generate_plots(ulog, px4_ulog, db_data, vehicle_data):
 #            '<th>Number of data points</th><th>Total bytes</th></tr>' + ''.join(
 #            ['<tr><td>'+'</td><td>'.join(list(x))+'</td></tr>' for x in table_text]) + '</table>'
 #    topics_div = Div(text=topics_info, width=int(plot_width*0.9))
-#    plots.append(widgetbox(topics_div, width=int(plot_width*0.9)))
+#    widgets.append(widgetbox(topics_div, width=int(plot_width*0.9)))
 
 
     # log messages
-    plots.append(get_logged_messages(ulog.logged_messages, plot_width))
+    widgets.append(get_logged_messages(ulog.logged_messages, plot_width))
 
 
     # perf & top output
@@ -723,9 +723,9 @@ def generate_plots(ulog, px4_ulog, db_data, vehicle_data):
 </div>
 '''.format(additional_data_html)
         additional_data_div = Div(text=additional_data_html, width=int(plot_width*0.9))
-        plots.append(widgetbox(additional_data_div, width=int(plot_width*0.9)))
+        widgets.append(widgetbox(additional_data_div, width=int(plot_width*0.9)))
 
 
     curdoc().template_variables['plots'] = jinja_plot_data
 
-    return plots
+    return widgets
