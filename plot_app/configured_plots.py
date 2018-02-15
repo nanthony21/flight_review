@@ -4,7 +4,7 @@ import cgi # for html escaping
 
 from bokeh.layouts import widgetbox
 from bokeh.models import Range1d
-from bokeh.models.widgets import Div, Button
+from bokeh.models.widgets import Div, Button, CheckboxButtonGroup
 from bokeh.io import curdoc
 
 from helper import *
@@ -656,17 +656,29 @@ def generate_plots(ulog, px4_ulog, db_data, vehicle_data):
                 'title': plot_title
                 })
     
-    #Link Axes
-    link_axes_html = '''
-    <button class="btn btn-common" data-toggle="button" onclick="alert('WOW');
-        console.log('Hey');" 
-        style="min-width:0">
-    Link X Axes
-    </button>
-    '''
-
-    link_axes_div = Div(text=link_axes_html, width=int(plot_width*0.9))
-    plots.append(widgetbox(link_axes_div, width=int(plot_width*0.9)))
+    link_axes = CheckboxButtonGroup(labels=["Link X Axes"])
+    link_source = ColumnDataSource(data = dict(linked=[False],plotids = [i.bokeh_plot._id for i in plots if isinstance(i,DataPlot)], defaults=[x_range.start,x_range.end]))
+    link_cb = CustomJS(args=dict(source=link_source),code='''
+       if (cb_obj.active.length>0){
+           source.data['linked']=[true];
+           var linked_rng = new Bokeh.Models.Range1d(start = source.data['defaults'][0], end = source.data['defaults'][1]);
+           for (i = 0; i < source.data['plotids'].length; i++){
+               Bokeh.documents[0].get_model_by_id(source.data['plotids'][i]).x_range = linked_rng;
+           }
+       }
+       else {
+           source.data['linked'] = [false];
+           for (i = 0; i < source.data['plotids'].length; i++){
+               var start = Bokeh.documents[0].get_model_by_id(source.data['plotids'][i]).x_range.start
+               var end = Bokeh.documents[0].get_model_by_id(source.data['plotids'][i]).x_range.end
+               var rng = new Bokeh.Models.Range1d(start = start, end = end);
+               Bokeh.documents[0].get_model_by_id(source.data['plotids'][i]).x_range = rng;
+           }
+       }
+    
+    ''')
+    link_axes.js_on_change('active',link_cb)
+    widgets.append(widgetbox(link_axes,width=int(plot_width*0.9)))
     
     # changed parameters
     widgets.append(get_changed_parameters(ulog.initial_parameters, plot_width))
